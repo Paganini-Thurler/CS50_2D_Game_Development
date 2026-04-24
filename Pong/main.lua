@@ -15,9 +15,7 @@ WINDOW_HEIGHT = 720
 VIRTUAL_WIDTH = 432
 VIRTUAL_HEIGHT = 243
 
-PLAYER1_SCORE = 0
-PLAYER2_SCORE = 0
-
+PADDLE_SPEED = 200
 
 -- Notes:
 -- In Lua code blocks, such as conditionals ends with end
@@ -25,6 +23,13 @@ PLAYER2_SCORE = 0
 
 -- A Setup function is a function that prepares the environment  
 function love.load() 
+    -- Start variables
+    player1Score = 0
+    player2Score = 0
+
+    paddle1Y = VIRTUAL_HEIGHT/2
+    paddle2Y = VIRTUAL_HEIGHT/2
+
    
     -- Graphical mode
     love.graphics.setDefaultFilter("nearest", "nearest")
@@ -51,6 +56,23 @@ function love.keypressed(key)
     end
 end
 
+function love.update(dt)
+    -- Player 1 input
+    if love.keyboard.isDown("w") then 
+        paddle1Y = paddle1Y - PADDLE_SPEED * dt
+    elseif love.keyboard.isDown("s") then
+        paddle1Y = paddle1Y + PADDLE_SPEED * dt
+    end
+
+    -- Player 2 input
+     if love.keyboard.isDown("up") then 
+        paddle2Y = paddle2Y - PADDLE_SPEED * dt
+    elseif love.keyboard.isDown("down") then
+        paddle2Y = paddle2Y + PADDLE_SPEED * dt
+    end
+
+end
+
 -- The drawing function
 function love.draw()
     -- Starts the virtual screen
@@ -64,14 +86,16 @@ function love.draw()
     -- Draws text in the window, the -6 is to account for the font height
     --love.graphics.printf("Hello!", 0, VIRTUAL_HEIGHT / 2 - 16, VIRTUAL_WIDTH, "center")
     
-    -- Score
-    love.graphics.print(tostring(PLAYER1_SCORE), VIRTUAL_WIDTH / 2 - 50, VIRTUAL_HEIGHT / 2 - 80)
-    love.graphics.print(tostring(PLAYER2_SCORE), VIRTUAL_WIDTH / 2 + 30, VIRTUAL_HEIGHT / 2 - 80)
     -- Graphics
+
+    -- Score
+    love.graphics.print(tostring(player1Score), VIRTUAL_WIDTH / 2 - 50, VIRTUAL_HEIGHT / 2 - 80)
+    love.graphics.print(tostring(player2Score), VIRTUAL_WIDTH / 2 + 30, VIRTUAL_HEIGHT / 2 - 80)
+    
     -- Paddle
-    love.graphics.rectangle("fill", 20, 20, 5, 20)
+    love.graphics.rectangle("fill", 20, paddle1Y, 5, 20)
     -- Paddle 2
-    love.graphics.rectangle("fill", VIRTUAL_WIDTH - 20, 20,  5, 20)
+    love.graphics.rectangle("fill", VIRTUAL_WIDTH - 20, paddle2Y,  5, 20)
     -- Ball
     love.graphics.rectangle("fill", VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
 
