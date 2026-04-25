@@ -64,7 +64,7 @@ function love.load()
 
     -- Paddles initial Y position
     player1 = Paddle(10, VIRTUAL_HEIGHT/2 - 10, 5, 20)
-    player2 = Paddle(VIRTUAL_WIDTH - 10, VIRTUAL_HEIGHT/2 - 10, 5, 20)
+    player2 = Paddle(VIRTUAL_WIDTH - 10 , VIRTUAL_HEIGHT/2 - 10, 5, 20)
 
     -- Ball initial position
     ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
@@ -113,7 +113,26 @@ function love.update(dt)
 
     -- Ball position update
     if gameState == "play" then
+
+        if ball:collides(player1) then
+            -- Adding 5 or an ammount helps the ball not to get stuck on the left
+            ball.x = ball.x + 5
+            ball.dx = -ball.dx * 1.1
+
+            ball:changeDY()
+        end
+
+        if ball:collides(player2) then
+            -- Subtracting 5 or an ammount helps the ball not to get stuck on the right
+            ball.x = ball.x - 5
+            ball.dx = -ball.dx * 1.1
+            ball:changeDY()
+        end
+
+        ball:bounces(VIRTUAL_HEIGHT)
+
         ball:update(dt)
+
     end
 
     player1:update(dt)
