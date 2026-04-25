@@ -11,12 +11,11 @@ push = require "push"
 -- class is a library that helps with Object Oriented Programming in lua
 class = require "class"
 
-
 -- The OOP Classes 
 require "Paddle"
 require "Ball"
 
--- Global variables --
+-- Game variables --
 
 -- Real screen/canvas
 WINDOW_WIDTH = 1280
@@ -62,9 +61,13 @@ function love.load()
     player1Score = 0
     player2Score = 0
 
-    -- Paddles initial Y position
-    player1 = Paddle(10, VIRTUAL_HEIGHT/2 - 10, 5, 20)
-    player2 = Paddle(VIRTUAL_WIDTH - 10 , VIRTUAL_HEIGHT/2 - 10, 5, 20)
+    -- Paddles initial position
+    player1 = Paddle(10, VIRTUAL_HEIGHT/2 - 10, 5, 20, PADDLE_SPEED)
+    player2 = Paddle(VIRTUAL_WIDTH - 10 , VIRTUAL_HEIGHT/2 - 10, 5, 20, PADDLE_SPEED)
+    
+    -- Sets who will serve 
+    servingPlayer = 1
+
 
     -- Ball initial position
     ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
@@ -80,62 +83,80 @@ function love.keypressed(key)
     end
 
     if key == "enter" or key == "return" then
-        if gameState == "start" then
+        if gameState == "start"  or gameState == "serving" then
             gameState = "play"
         else 
             gameState = "start"
             -- Reset ball
-            ball:reset()
+            ball:reset(servingPlayer)
         end
     end
 end
 
 -- The update function is a function that update all the variables before
--- they can be used to update the graphics.
+-- they can be used to update the graphics based on delta time to make all
+-- the calculations independent of refresh rates or faster CPUS/GPUS
 function love.update(dt)
     -- Player 1 movement
     if love.keyboard.isDown("w") then 
-        player1.dy = -PADDLE_SPEED
+        player1:up()
     elseif love.keyboard.isDown("s") then
-        player1.dy = PADDLE_SPEED
+        player1:down()
     else
-        player1.dy = 0
+        player1:stop()
     end
 
     -- Player 2 input
-     if love.keyboard.isDown("up") then 
-        player2.dy = -PADDLE_SPEED
+    if love.keyboard.isDown("up") then 
+        player2:up()
     elseif love.keyboard.isDown("down") then
-        player2.dy = PADDLE_SPEED
+        player2:down()
     else 
-        player2.dy = 0
+        player2:stop()
     end
 
     -- Ball position update
     if gameState == "play" then
 
-        if ball:collides(player1) then
-            -- Adding 5 or an ammount helps the ball not to get stuck on the left
-            ball.x = ball.x + 5
-            ball.dx = -ball.dx * 1.1
+        local playerWhoScored = ball:scores(VIRTUAL_WIDTH)
 
+        if playerWhoScored == 1 then
+            servingPlayer = 2 
+            player1Score = player1Score + 1
+            ball:reset(servingPlayer)
+            gameState = "serving"
+        end 
+
+        if playerWhoScored == 2 then
+            servingPlayer = 1 
+            player2Score = player2Score + 1
+            ball:reset(servingPlayer)
+            gameState = "serving"
+        end 
+        
+
+        if ball:collides(player1) then
+            -- Inverts the x direction from the player 1 
+            ball:changeDX(1)
+            -- Randomizes the ball dy 
             ball:changeDY()
         end
 
         if ball:collides(player2) then
-            -- Subtracting 5 or an ammount helps the ball not to get stuck on the right
-            ball.x = ball.x - 5
-            ball.dx = -ball.dx * 1.1
+            -- Inverts the x direction from the player 2 
+            ball:changeDX(2)
+            -- Randomizes the ball dy 
             ball:changeDY()
         end
-
+        -- If theres a bounce it will account it
         ball:bounces(VIRTUAL_HEIGHT)
 
         ball:update(dt)
 
     end
-
+    -- Update player 1 paddle
     player1:update(dt)
+    -- Update player 2 paddle
     player2:update(dt)
 end
 
