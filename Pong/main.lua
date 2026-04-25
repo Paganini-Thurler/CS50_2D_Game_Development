@@ -41,6 +41,9 @@ function love.load()
     -- Graphical mode
     love.graphics.setDefaultFilter("nearest", "nearest")
 
+    -- Screen title 
+    love.window.setTitle("Pong")
+
     -- Fonts 
     largeFont = love.graphics.newFont("font.ttf", 32)
     smallFont = love.graphics.newFont("font.ttf", 8)
@@ -81,7 +84,6 @@ function love.keypressed(key)
             gameState = "play"
         else 
             gameState = "start"
-            
             -- Reset ball
             ball:reset()
         end
@@ -140,11 +142,23 @@ function love.draw()
     
     -- Paddle 1
     player1:render(dt)
-   
     -- Paddle 2
     player2:render(dt)
     -- Ball
    ball:render(dt)
+
+   displayFPS()
+
     --End the virtual screen
     push.finish()
 end
+
+-- Draws the FPS on the left corner of the screen
+function displayFPS()
+    love.graphics.setFont(smallFont)
+    -- The RGBA color is Green
+    love.graphics.setColor(0,1,0,1)
+    love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 10, 10)
+    love.graphics.setColor(1,1,1,1)
+end
+    
