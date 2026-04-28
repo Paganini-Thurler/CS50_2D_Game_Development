@@ -66,6 +66,14 @@ function love.load()
     -- Ball initial position
     ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
 
+    -- set up our sound effects; later, we can just index this table and
+    -- call each entry's `play` method
+    sounds = {
+        ["paddle_hit"] = love.audio.newSource('sounds/paddle_hit.wav', 'static'),
+        ["score"] = love.audio.newSource('sounds/score.wav', 'static'),
+        ["wall_hit"] = love.audio.newSource('sounds/wall_hit.wav', 'static')
+    }
+
     -- Set initial gameState
    setGameState("start")
 end 
@@ -92,8 +100,13 @@ function love.update(dt)
        whoServes()
        -- Check the ball collision with a player paddle
        ballPlayerCollision()
-        -- If theres a bounce it will account it
-        ball:bounces(VIRTUAL_HEIGHT)
+        
+       -- If theres a bounce it will account it
+        local isBouncing = ball:bounces(VIRTUAL_HEIGHT) 
+        if isBouncing then
+            sounds["wall_hit"]:play()
+        end  
+        
         ball:update(dt)
     end
 
@@ -194,6 +207,7 @@ end
 function whoServes()
     local playerWhoScored = ball:scores(VIRTUAL_WIDTH)
     if playerWhoScored == 1 then
+        sounds["score"]:play()
         servingPlayer = 2 
         player1Score = player1Score + 1
         ball:reset(servingPlayer)
@@ -201,6 +215,7 @@ function whoServes()
     end 
 
     if playerWhoScored == 2 then
+        sounds["score"]:play()
         servingPlayer = 1 
         player2Score = player2Score + 1
         ball:reset(servingPlayer)
@@ -210,7 +225,9 @@ end
 
 -- Checks player ball collision
 function ballPlayerCollision()
+
     if ball:collides(player1) then
+        sounds['paddle_hit']:play()
         -- Inverts the x direction from the player 1 
         ball:changeDX(1)
         -- Randomizes the ball dy 
@@ -218,6 +235,7 @@ function ballPlayerCollision()
     end
 
     if ball:collides(player2) then
+        sounds['paddle_hit']:play()
         -- Inverts the x direction from the player 2 
         ball:changeDX(2)
         -- Randomizes the ball dy 

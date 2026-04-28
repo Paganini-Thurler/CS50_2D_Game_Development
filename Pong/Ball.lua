@@ -52,6 +52,7 @@ function Ball:scores(screenWidth)
     elseif self.x < 4 then
         return 2
     end
+    return 0
 end
 
 -- This bounces the ball on the top and bottom edges of the field
@@ -61,14 +62,15 @@ function Ball:bounces(screenHeight)
         self.y = self.height
         -- Inverts the y direction creating a bounce
         self.dy = -self.dy
+        return true
     elseif self.y >= screenHeight - self.height then
         -- Sets y position to prevent a bug that "glues" the ball on the edge
         self.y = screenHeight - self.height  
         -- Inverts the y direction creating a bounce
         self.dy = -self.dy
-
+        return true
     end
-
+    return false
 end
 
 -- This method is called when a paddle hits a ball, it randomizes the ball angle
