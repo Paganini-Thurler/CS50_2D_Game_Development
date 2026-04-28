@@ -25,6 +25,8 @@ VIRTUAL_WIDTH = 432
 VIRTUAL_HEIGHT = 243
 -- Defines a paddle speed of 200px/s 
 PADDLE_SPEED = 200
+-- Defines the points for a victory
+VICTORY_SCORE = 5
 
 -- A Setup function is a function that prepares the environment.
 function love.load() 
@@ -62,6 +64,9 @@ function love.load()
     
     -- Sets who will serve 
     servingPlayer = 1
+    
+    -- who wins
+    winner = 0
 
     -- Ball initial position
     ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
@@ -75,8 +80,12 @@ function love.load()
     }
 
     -- Set initial gameState
-   setGameState("start")
+    setGameState("start")
 end 
+
+
+-- CORE LOVE LOOPS
+
 
 -- Keyboard input
 function love.keypressed(key) 
@@ -94,29 +103,13 @@ function love.update(dt)
     playerMovement(player1, "w", "s")
     playerMovement(player2, "up", "down")
    
-    -- Ball position update
-    if gameState == "play" then
-       -- Checks and sets who will serve
-       whoServes()
-       -- Check the ball collision with a player paddle
-       ballPlayerCollision()
-        
-       -- If theres a bounce it will account it
-        local isBouncing = ball:bounces(VIRTUAL_HEIGHT) 
-        if isBouncing then
-            sounds["wall_hit"]:play()
-        end  
-        
-        ball:update(dt)
-    end
+    -- Updates the ball
+    ballUpdate(dt)
 
     -- Update player 1 paddle
     player1:update(dt)
     -- Update player 2 paddle
     player2:update(dt)
-
-    -- Check if the match is over
-    isMatchOver()
 end
 
 -- After the variables are updated by the user input, they are used to
@@ -144,6 +137,9 @@ function love.draw()
     elseif gameState == "serving" then
         love.graphics.printf("Player " .. tostring(servingPlayer) .. " is serving" ,0, VIRTUAL_HEIGHT / 2 + 4, VIRTUAL_WIDTH, "center")
         love.graphics.printf("Press Enter to Continue",0, VIRTUAL_HEIGHT / 2 - 4, VIRTUAL_WIDTH, "center")
+    elseif gameState == "end" then
+        love.graphics.printf("Player " ..tostring(winner) .. " wins",0, VIRTUAL_HEIGHT / 2 + 4, VIRTUAL_WIDTH, "center")
+        love.graphics.printf("Press Enter to Continue",0, VIRTUAL_HEIGHT / 2 - 4, VIRTUAL_WIDTH, "center")
     end
 
     if gameState == "play" then
@@ -151,45 +147,44 @@ function love.draw()
     end
 
     -- Paddle 1
-    player1:render(dt)
+    player1:render()
     -- Paddle 2
-    player2:render(dt)
+    player2:render()
     
-   displayFPS()
+    displayFPS()
 
     --End the virtual screen
     push.finish()
 end
 
--- Draws the FPS on the left corner of the screen
-function displayFPS()
-    love.graphics.setFont(smallFont)
-    -- The RGBA color is Green
-    love.graphics.setColor(0,1,0,1)
-    -- .. operator for string concatenation
-    love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 10, 10)
-    love.graphics.setColor(1,1,1,1)
+
+-- HELPER FUNCTIONS
+
+
+function setGameState(state)
+    gameState = state
 end
 
-function quitGame(key)
-     -- Quits the game
-    if key == "escape" then
-        love.event.quit()
-    end
+function resetGame()
+    player1Score = 0
+    player2Score = 0
+    -- Reset ball position to prevent immediate scoring on restart
+    ball:reset(servingPlayer) 
+    setGameState("start")
 end 
 
--- 
+-- Comfirms action in the game
 function pressEnter(key)
     if key == "enter" or key == "return" then
-        if gameState == "start"  or gameState == "serving" then
-            setGameState("play") 
-        else 
-            setGameState("start")
-            -- Reset ball
-            ball:reset(servingPlayer)
+        if gameState == "start" then
+            setGameState("serving")
+        elseif gameState == "serving" then
+            setGameState("play")
+        elseif gameState == "end" then
+            resetGame()
         end
     end
-end 
+end
 
 -- Update player paddle movement based on input
 function playerMovement(player, upKey, downKey)
@@ -203,29 +198,54 @@ function playerMovement(player, upKey, downKey)
     end
 end 
 
--- Check  who will serve the ball
-function whoServes()
-    local playerWhoScored = ball:scores(VIRTUAL_WIDTH)
-    if playerWhoScored == 1 then
-        sounds["score"]:play()
-        servingPlayer = 2 
-        player1Score = player1Score + 1
-        ball:reset(servingPlayer)
-        gameState = "serving"
-    end 
+-- Checks all the ball actions
+function ballUpdate(dt)
+     -- Ball position update
+    if gameState == "play" then
+       -- Checks and sets who will serve
+       whoServes()
+       -- Check the ball collision with a player paddle
+       ballPlayerCollision()
+        
+       -- If theres a bounce it will account it
+        if ball:bounces(VIRTUAL_HEIGHT) then
+            sounds["wall_hit"]:play()
+        end  
+        
+        ball:update(dt)
+    end
+end 
 
-    if playerWhoScored == 2 then
+-- Checks who will serve the ball 
+function whoServes()
+    local playerWhoScored = ball:scores(VIRTUAL_WIDTH) 
+    if playerWhoScored > 0 then
+
         sounds["score"]:play()
-        servingPlayer = 1 
-        player2Score = player2Score + 1
-        ball:reset(servingPlayer)
-        gameState = "serving"
-    end 
+        if playerWhoScored == 1 then
+            player1Score = player1Score + 1
+            servingPlayer = 2
+        else
+            player2Score = player2Score + 1
+            servingPlayer = 1
+        end
+
+        -- Check if the match is over
+        if player1Score == VICTORY_SCORE then
+            winner = 1
+            setGameState("end")
+        elseif player2Score == VICTORY_SCORE then
+            winner = 2
+            setGameState("end")
+        else
+            ball:reset(servingPlayer)
+            setGameState("serving")
+        end
+    end
 end
 
--- Checks player ball collision
+-- Checks player-ball collision
 function ballPlayerCollision()
-
     if ball:collides(player1) then
         sounds['paddle_hit']:play()
         -- Inverts the x direction from the player 1 
@@ -243,13 +263,19 @@ function ballPlayerCollision()
     end
 end
 
-function isMatchOver()
-    if player1Score == 5 or player2Score == 5 then
-        gameState = "end"
-        love.graphics.printf("Macth is over",0, VIRTUAL_HEIGHT / 2 - 4, VIRTUAL_WIDTH, "center")
+function quitGame(key)
+     -- Quits the game
+    if key == "escape" then
+        love.event.quit()
     end
-end
+end 
 
-function setGameState(state)
-    gameState = state
+-- Draws the FPS on the left corner of the screen
+function displayFPS()
+    love.graphics.setFont(smallFont)
+    -- The RGBA color is Green
+    love.graphics.setColor(0,1,0,1)
+    -- .. operator for string concatenation
+    love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 10, 10)
+    love.graphics.setColor(1,1,1,1)
 end

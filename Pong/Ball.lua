@@ -95,7 +95,6 @@ function Ball:changeDX(playerNumber)
     ball.dx = -ball.dx * 1.1
 end 
 
-
 -- Reset ball position to the default place
 function Ball:reset(servingPlayer)
     self.x = VIRTUAL_WIDTH / 2 - 2 
@@ -123,4 +122,3 @@ function Ball:render()
 end
 
 return Ball
-
