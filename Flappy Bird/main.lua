@@ -17,6 +17,20 @@ WINDOW_HEIGHT = 720
 VIRTUAL_WIDTH = 512
 VIRTUAL_HEIGHT = 288
 
+-- Images x loop coordinates
+local backgroundScroll = 0
+local groundScroll = 0
+
+-- The x coordinate from the background that it will return to 0
+local BACKGROUND_LOOPING_POINT = 1157
+
+-- Images scroll speeds in pixels per second, must be scalled by dt
+-- The background will move 4 times slower than the ground creating
+-- a parallax effect
+local BACKGROUND_SCROLL_SPEED = 15
+local GROUND_SCROLL_SPEED = 60
+
+
 -- Setup function initializes all the game variables and modes
 function love.load()
     -- nearest-neighbor mode
@@ -50,6 +64,17 @@ function love.keypressed(key)
     end
 end
 
+-- Update loop
+function love.update(dt)
+    -- scroll background by preset speed * dt, looping back to 0 after the looping point
+    backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
+    
+    -- Scroll the ground by preset speed * dt, lopping back to 0 after the screen width ends
+    groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt ) % VIRTUAL_WIDTH
+
+
+end 
+
 -- Drawing loop or graphics update
 function love.draw()
     --Initializes virtual screen
@@ -57,9 +82,10 @@ function love.draw()
 
     --Game graphics
     -- Draw the background in the top-left of the screen at (0,0) 
-    love.graphics.draw(background,0,0)
+    love.graphics.draw(background,-backgroundScroll,0)
+    love.graphics.draw(background, -backgroundScroll + BACKGROUND_LOOPING_POINT, 0)
     -- Draw the ground at the bottom of the screen minus its height of 16px
-    love.graphics.draw(ground,0,VIRTUAL_HEIGHT - 16)
+    love.graphics.draw(ground,-groundScroll,VIRTUAL_HEIGHT - 16)
 
     --Ends virtual screen
     push.finish()
