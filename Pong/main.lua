@@ -46,7 +46,7 @@ function love.load()
 
     -- Initilizes a window 
     love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT,{
-        resizable = false, 
+        resizable = true, 
         vsync = true, 
         fullscreen = false
     })
@@ -160,6 +160,10 @@ end
 
 -- HELPER FUNCTIONS
 
+
+function love.resize(w, h)
+    push.resize(w, h)
+end
 
 function setGameState(state)
     gameState = state
