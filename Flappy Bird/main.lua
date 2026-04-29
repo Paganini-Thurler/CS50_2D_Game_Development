@@ -8,6 +8,12 @@
 -- Virtual resolution library
 push = require "push"
 
+-- class is a library that helps with Object Oriented Programming in lua
+class = require "class"
+
+-- Classes
+require "Bird"
+
 -- Screen resolution
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -22,7 +28,7 @@ local backgroundScroll = 0
 local groundScroll = 0
 
 -- The x coordinate from the background that it will return to 0
-local BACKGROUND_LOOPING_POINT = 1157
+local BACKGROUND_LOOPING_POINT = 256
 
 -- Images scroll speeds in pixels per second, must be scalled by dt
 -- The background will move 4 times slower than the ground creating
@@ -52,6 +58,9 @@ function love.load()
 
     -- Virtual screen
     push.setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, {upscale = "normal"})
+
+    -- Variables
+    bird = Bird()
 end 
 
 function love.resize(w, h)
@@ -81,11 +90,19 @@ function love.draw()
     push.start()
 
     --Game graphics
-    -- Draw the background in the top-left of the screen at (0,0) 
-    love.graphics.draw(background,-backgroundScroll,0)
+    
+    -- Background image
+    love.graphics.draw(background, -backgroundScroll, 0)
+    -- The second copy to fill the first 256px gap
     love.graphics.draw(background, -backgroundScroll + BACKGROUND_LOOPING_POINT, 0)
+    -- The third copy to fill the remaining screen width during the scroll
+    love.graphics.draw(background, -backgroundScroll + (BACKGROUND_LOOPING_POINT * 2), 0)
+
+    
     -- Draw the ground at the bottom of the screen minus its height of 16px
     love.graphics.draw(ground,-groundScroll,VIRTUAL_HEIGHT - 16)
+
+    bird:render()
 
     --Ends virtual screen
     push.finish()
