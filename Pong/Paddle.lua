@@ -35,6 +35,7 @@ function Paddle:render(dt)
     love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
 end
 
+-- Paddle movement
 function Paddle:up()
     self.dy = -self.paddleSpeed
 end

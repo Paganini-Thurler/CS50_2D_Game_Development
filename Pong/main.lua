@@ -39,6 +39,9 @@ function love.load()
     
     -- Screen title 
     love.window.setTitle("Pong")
+
+    -- Field 
+    field = love.graphics.newImage("images/pongField.png")
     
     -- Fonts 
     largeFont = love.graphics.newFont("font.ttf", 32)
@@ -68,6 +71,9 @@ function love.load()
     -- who wins
     winner = 0
 
+    -- Trigger for the AI opponent
+    isOpponentAI = true
+
     -- Ball initial position
     ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
 
@@ -91,8 +97,11 @@ end
 function love.keypressed(key) 
     -- Confirm choices by pressing Enter
     pressEnter(key)
+    -- Check if there's a second player
+    checkMultiplayer(key)
     -- Quits the game
     quitGame(key)
+
 end
 
 -- The update function is a function that update all the variables before
@@ -108,8 +117,13 @@ function love.update(dt)
 
     -- Update player 1 paddle
     player1:update(dt)
-    -- Update player 2 paddle
-    player2:update(dt)
+
+    -- Update player 2 paddle with human or ai player
+    if isOpponentAI then
+        opponentArtificialIntelligence(isOpponentAI) 
+    else
+        player2:update(dt)
+    end
 end
 
 -- After the variables are updated by the user input, they are used to
@@ -125,6 +139,7 @@ function love.draw()
     love.graphics.setFont(largeFont)
     -- Draws text in the window, the -6 is to account for the font height
     --love.graphics.printf("Hello!", 0, VIRTUAL_HEIGHT / 2 - 16, VIRTUAL_WIDTH, "center")
+
     
     -- Graphics
     -- Score
@@ -133,7 +148,8 @@ function love.draw()
 
     love.graphics.setFont(smallFont)
     if gameState == "start" then
-        love.graphics.printf("Press Enter to Play",0, VIRTUAL_HEIGHT / 2 - 4, VIRTUAL_WIDTH, "center")
+        love.graphics.printf("Press ENTER to Play",0, VIRTUAL_HEIGHT / 2 - 4, VIRTUAL_WIDTH, "center")
+        love.graphics.printf("Press UP or DOWN to multiplay",0, VIRTUAL_HEIGHT / 2 + 4, VIRTUAL_WIDTH, "center")
     elseif gameState == "serving" then
         love.graphics.printf("Player " .. tostring(servingPlayer) .. " is serving" ,0, VIRTUAL_HEIGHT / 2 + 4, VIRTUAL_WIDTH, "center")
         love.graphics.printf("Press Enter to Continue",0, VIRTUAL_HEIGHT / 2 - 4, VIRTUAL_WIDTH, "center")
@@ -143,6 +159,8 @@ function love.draw()
     end
 
     if gameState == "play" then
+        -- Draws the field 
+        love.graphics.draw(field, 0, 0)
         ball:render()
     end
 
@@ -169,14 +187,6 @@ function setGameState(state)
     gameState = state
 end
 
-function resetGame()
-    player1Score = 0
-    player2Score = 0
-    -- Reset ball position to prevent immediate scoring on restart
-    ball:reset(servingPlayer) 
-    setGameState("start")
-end 
-
 -- Comfirms action in the game
 function pressEnter(key)
     if key == "enter" or key == "return" then
@@ -190,6 +200,28 @@ function pressEnter(key)
     end
 end
 
+function checkMultiplayer(key)
+    if key == "up" or key == "down" then
+        isOpponentAI = false
+    end
+end
+
+function quitGame(key)
+     -- Quits the game
+    if key == "escape" then
+        love.event.quit()
+    end
+end 
+
+function resetGame()
+    player1Score = 0
+    player2Score = 0
+    -- Reset ball position to prevent immediate scoring on restart
+    ball:reset(servingPlayer) 
+    isOpponentAI = true
+    setGameState("start")
+end 
+
 -- Update player paddle movement based on input
 function playerMovement(player, upKey, downKey)
     -- Player movement
@@ -202,23 +234,6 @@ function playerMovement(player, upKey, downKey)
     end
 end 
 
--- Checks all the ball actions
-function ballUpdate(dt)
-     -- Ball position update
-    if gameState == "play" then
-       -- Checks and sets who will serve
-       whoServes()
-       -- Check the ball collision with a player paddle
-       ballPlayerCollision()
-        
-       -- If theres a bounce it will account it
-        if ball:bounces(VIRTUAL_HEIGHT) then
-            sounds["wall_hit"]:play()
-        end  
-        
-        ball:update(dt)
-    end
-end 
 
 -- Checks who will serve the ball 
 function whoServes()
@@ -248,6 +263,24 @@ function whoServes()
     end
 end
 
+-- Checks all the ball actions
+function ballUpdate(dt)
+     -- Ball position update
+    if gameState == "play" then
+       -- Checks and sets who will serve
+       whoServes()
+       -- Check the ball collision with a player paddle
+       ballPlayerCollision()
+        
+       -- If theres a bounce it will account it
+        if ball:bounces(VIRTUAL_HEIGHT) then
+            sounds["wall_hit"]:play()
+        end  
+        
+        ball:update(dt)
+    end
+end 
+
 -- Checks player-ball collision
 function ballPlayerCollision()
     if ball:collides(player1) then
@@ -267,10 +300,26 @@ function ballPlayerCollision()
     end
 end
 
-function quitGame(key)
-     -- Quits the game
-    if key == "escape" then
-        love.event.quit()
+-- This is how simple AI in old video games were implemented
+-- This checks if the ball passed the paddle center by a margin
+-- if it did in a margin, it moves the paddle to compesate without
+-- player input
+function opponentArtificialIntelligence(isOpponentAI) 
+    if gameState == "play" and isOpponentAI == true then
+        local paddleCenter = player2.y + (player2.height / 2)
+        local ballCenter = ball.y + (ball.height / 2 )
+
+        --Create a deadzone to avoid jitter
+        if math.abs(paddleCenter - ballCenter) > 10 and math.random() > 0.2 then
+            if paddleCenter > ballCenter then
+                player2:up()
+            else
+                player2:down()
+            end
+        else 
+            -- If its close enough it will not move
+            player2:stop()
+        end
     end
 end 
 
