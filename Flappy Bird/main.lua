@@ -1,0 +1,66 @@
+--[[
+    Flappy Bird is mobile game by Dong Nguyen that went viral in 2013, utilizing a very simple
+    but effective gameplay mechanic of avoiding pipes indefinitely by just tapping
+    the screen, making the player's bird avatar flap its wings and move upwards slightly.
+
+]]
+
+-- Virtual resolution library
+push = require "push"
+
+-- Screen resolution
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 720
+
+-- Virtual resolution
+-- 512x288 is 16:9 aspect ratio for pixel art games
+VIRTUAL_WIDTH = 512
+VIRTUAL_HEIGHT = 288
+
+-- Setup function initializes all the game variables and modes
+function love.load()
+    -- nearest-neighbor mode
+    love.graphics.setDefaultFilter("nearest", "nearest")
+
+    -- Background and ground
+    background = love.graphics.newImage("images/background.png")
+    ground = love.graphics.newImage("images/ground.png")
+
+    --Window
+    -- Window title
+    love.window.setTitle("Flappy bird")
+    -- Initialize the window with options
+    love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
+        vsync = true,
+        fullscreen = false,
+        resizable = true
+    })
+
+    -- Virtual screen
+    push.setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, {upscale = "normal"})
+end 
+
+function love.resize(w, h)
+    push.resize(w, h)
+end
+
+function love.keypressed(key)
+    if key == "escape" then
+        love.event.quit()
+    end
+end
+
+-- Drawing loop or graphics update
+function love.draw()
+    --Initializes virtual screen
+    push.start()
+
+    --Game graphics
+    -- Draw the background in the top-left of the screen at (0,0) 
+    love.graphics.draw(background,0,0)
+    -- Draw the ground at the bottom of the screen minus its height of 16px
+    love.graphics.draw(ground,0,VIRTUAL_HEIGHT - 16)
+
+    --Ends virtual screen
+    push.finish()
+end 
