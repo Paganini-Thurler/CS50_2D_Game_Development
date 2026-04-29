@@ -110,20 +110,21 @@ end
 function love.update(dt)
     --  Updates the player position after the input
     playerMovement(player1, "w", "s")
-    playerMovement(player2, "up", "down")
    
     -- Updates the ball
     ballUpdate(dt)
 
-    -- Update player 1 paddle
-    player1:update(dt)
-
     -- Update player 2 paddle with human or ai player
+    -- How it should be controlled 
     if isOpponentAI then
         opponentArtificialIntelligence(isOpponentAI) 
     else
-        player2:update(dt)
+        playerMovement(player2, "up", "down")
     end
+
+    -- Update players 
+    player1:update(dt)
+    player2:update(dt)
 end
 
 -- After the variables are updated by the user input, they are used to
@@ -310,7 +311,7 @@ function opponentArtificialIntelligence(isOpponentAI)
         local ballCenter = ball.y + (ball.height / 2 )
 
         --Create a deadzone to avoid jitter
-        if math.abs(paddleCenter - ballCenter) > 10 and math.random() > 0.2 then
+        if math.abs(paddleCenter - ballCenter) > 10 then
             if paddleCenter > ballCenter then
                 player2:up()
             else
