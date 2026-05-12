@@ -75,13 +75,14 @@ end
 
 -- Update loop
 function love.update(dt)
-    -- scroll background by preset speed * dt, looping back to 0 after the looping point
+    -- Scrolls background by preset speed * dt, looping back to 0 after the looping point
     backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
     
-    -- Scroll the ground by preset speed * dt, lopping back to 0 after the screen width ends
+    -- Scrolls the ground by preset speed * dt, lopping back to 0 after the screen width ends
     groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt ) % VIRTUAL_WIDTH
 
-
+    -- Updates the bird 
+    bird:update(dt)
 end 
 
 -- Drawing loop or graphics update
@@ -102,6 +103,7 @@ function love.draw()
     -- Draw the ground at the bottom of the screen minus its height of 16px
     love.graphics.draw(ground,-groundScroll,VIRTUAL_HEIGHT - 16)
 
+   
     bird:render()
 
     --Ends virtual screen

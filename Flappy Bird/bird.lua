@@ -1,5 +1,8 @@
 Bird = class{}
 
+-- Sets the gravity that will pull the bird
+local GRAVITY = 800
+
 function Bird:init()
     -- Load the bird sprite
     self.sprite = love.graphics.newImage("images/bird.png")
@@ -12,6 +15,9 @@ function Bird:init()
     self.x = VIRTUAL_WIDTH / 2 - (self.width / 2)
     self.y = VIRTUAL_HEIGHT / 2 - (self.height / 2)
 
+    -- Sets the dy
+    self.dy = 0 
+
     -- Create "Quads" for each frame
     self.frames = {}
     for i = 0, 3 do
@@ -23,6 +29,13 @@ function Bird:init()
 
     -- Which frame to show (1 to 4)
     self.currentFrame = 1
+end 
+
+function Bird:update(dt)
+    -- Applies gravity to velocity based on dt
+    self.dy = self.dy + GRAVITY * dt
+    -- Applies the current dy to the y position
+    self.y = self.y + self.dy * dt
 end 
 
 function Bird:render()
