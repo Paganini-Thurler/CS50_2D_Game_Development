@@ -59,3 +59,11 @@ Local Multiplayer: At the Start Screen, press the UP or DOWN arrow keys to disab
 3.  **Winning:** The first player to reach **5 points** is declared the winner.
 
 
+## Credits
+
+Havard for the CS50G
+Atari for Pong
+
+
+### Assets 
+https://megacrash.itch.io/flappy-bird-assets
