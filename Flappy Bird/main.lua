@@ -59,6 +59,9 @@ function love.load()
     -- Virtual screen
     push.setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, {upscale = "normal"})
 
+    -- Input table
+    love.keyboard.keysPressed = {}
+
     -- Variables
     bird = Bird()
 end 
@@ -67,10 +70,23 @@ function love.resize(w, h)
     push.resize(w, h)
 end
 
+
 function love.keypressed(key)
+    -- Adds the keypressed on the input table
+    love.keyboard.keysPressed[key] = true
+
     if key == "escape" then
         love.event.quit()
     end
+end
+
+-- Checks the input table for keys that were pressed 
+function love.keyboard.wasPressed(key)
+    if love.keyboard.keysPressed[key] then
+        return true
+    else 
+        return false
+    end 
 end
 
 -- Update loop
@@ -83,6 +99,9 @@ function love.update(dt)
 
     -- Updates the bird 
     bird:update(dt)
+
+    -- Resets the input table
+    love.keyboard.keysPressed = {}
 end 
 
 -- Drawing loop or graphics update
