@@ -5,6 +5,7 @@
 
 ]]
 
+-- Libraries 
 -- Virtual resolution library
 push = require "push"
 
@@ -13,6 +14,7 @@ class = require "class"
 
 -- Classes
 require "Bird"
+require "Pipe"
 
 -- Screen resolution
 WINDOW_WIDTH = 1280
@@ -36,6 +38,11 @@ local BACKGROUND_LOOPING_POINT = 256
 local BACKGROUND_SCROLL_SPEED = 15
 local GROUND_SCROLL_SPEED = 60
 
+-- Pipes table
+local pipes = {}
+
+-- Pipe spawn timer 
+local spawnTimer = 0
 
 -- Setup function initializes all the game variables and modes
 function love.load()
@@ -97,6 +104,10 @@ function love.update(dt)
     -- Scrolls the ground by preset speed * dt, lopping back to 0 after the screen width ends
     groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt ) % VIRTUAL_WIDTH
 
+    -- Update the spawnTimer
+    updateTimer(dt)
+    updatePipes(dt)
+    
     -- Updates the bird 
     bird:update(dt)
 
@@ -118,13 +129,48 @@ function love.draw()
     -- The third copy to fill the remaining screen width during the scroll
     love.graphics.draw(background, -backgroundScroll + (BACKGROUND_LOOPING_POINT * 2), 0)
 
-    
-    -- Draw the ground at the bottom of the screen minus its height of 16px
+    -- Draws the ground at the bottom of the screen minus its height of 16px
     love.graphics.draw(ground,-groundScroll,VIRTUAL_HEIGHT - 16)
 
-   
+    drawPipes()
     bird:render()
+ 
 
     --Ends virtual screen
     push.finish()
 end 
+
+-- Implements the logic to spawn pipes after a time
+function updateTimer(dt)
+    -- Adds a delta time to the spawn timer 
+    spawnTimer = spawnTimer + dt
+
+    if spawnTimer > 2 then
+        -- Calls the spawnPipe method
+        spawnPipe()
+        -- Resets the timer
+        spawnTimer = 0
+    end
+end 
+
+function spawnPipe()
+    -- Creates an instance of Pipe into the table pipes
+    table.insert(pipes, Pipe())
+end
+
+function updatePipes(dt)
+    for key, pipe in pairs(pipes) do
+        pipe:update(dt)
+        
+        -- Removes pipes that are not visible on the screen
+        if pipe.x < -pipe.width then
+            table.remove(pipes, key)
+        end
+    end
+end
+
+function drawPipes()
+    for key, pipe in pairs(pipes) do
+        pipe:render()
+    end
+end
