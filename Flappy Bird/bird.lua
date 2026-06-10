@@ -1,3 +1,8 @@
+--[[
+    The Bird has all the attributes, sprites, methods that model its behaviour
+]]
+
+
 Bird = class{}
 
 -- Sets the gravity that will pull the bird
