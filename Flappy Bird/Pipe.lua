@@ -3,18 +3,21 @@
 ]]
 
 Pipe = class{}
+-- Pipe dimension in pixels
+PIPE_HEIGHT = 160
+PIPE_WIDH = 32
 
 -- Pipe image
 local PIPE_SPRITE = love.graphics.newImage("images/pipes.png")
 -- Pipe scroll speed
-local PIPE_SCROLL = -60
+local PIPE_SPEED = -60
 
 
-function Pipe:init()
+function Pipe:init(pipeYPosition)
     -- Creates the pipe at the edge of the screen
     self.x = VIRTUAL_WIDTH
     -- Sets the y to a random value halfway bellow the screen
-    self.y = math.random(VIRTUAL_HEIGHT / 2, VIRTUAL_HEIGHT - 10)
+    self.y = pipeYPosition
     -- There are four pipes in the image hence the division by 4
     self.width = PIPE_SPRITE:getWidth()/4
     self.height = PIPE_SPRITE:getHeight()
