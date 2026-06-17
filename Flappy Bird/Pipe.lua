@@ -5,15 +5,17 @@
 Pipe = class{}
 -- Pipe dimension in pixels
 PIPE_HEIGHT = 160
-PIPE_WIDH = 32
+PIPE_WIDTH = 32
 
 -- Pipe image
 local PIPE_SPRITE = love.graphics.newImage("images/pipes.png")
 -- Pipe scroll speed
-local PIPE_SPEED = -60
+PIPE_SPEED = 60
 
-
-function Pipe:init(pipeYPosition)
+--Constructor
+function Pipe:init(orientation,pipeYPosition)
+    -- Sets the pipe orientation
+    self.orientation = orientation
     -- Creates the pipe at the edge of the screen
     self.x = VIRTUAL_WIDTH
     -- Sets the y to a random value halfway bellow the screen
@@ -33,14 +35,32 @@ function Pipe:init(pipeYPosition)
         ))
     end
 
+
 end
 
 -- Updates the pipe x position by the delta time
 function Pipe:update(dt)
-    self.x = self.x + PIPE_SCROLL * dt
+    self.x = self.x + PIPE_SPEED * dt
 end
 
 -- Draws the sprites each frame by its new x coordinate
 function Pipe:render()
-    love.graphics.draw(PIPE_SPRITE, self.pipeSprites[1], self.x, self.y)
+    -- In the course they use a hack to create a ternary expression
+    -- I'm not a fan of ternaries when calling a method because its 
+    -- easy to lost track of whats happening. 
+    -- (self.orientation == 'top' and self.y + PIPE_HEIGHT or self.y)
+    -- The objective is to rotate the image depending on the orietation
+
+    -- If flipY is 1 it will not be flipped on the y axis
+    local renderY = self.y
+    local flipY = 1
+
+    if self.orientation == "top" then
+        renderY = self.y + PIPE_HEIGHT
+        -- Inverts the sprite 
+        flipY = -1
+    end
+
+    -- love.graphics.draw( drawable, x, y, r, sx, sy, ox, oy, kx, ky )
+    love.graphics.draw(PIPE_SPRITE, self.pipeSprites[1], self.x, renderY, 0, 1, flipY)
 end
