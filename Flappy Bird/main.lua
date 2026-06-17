@@ -15,6 +15,7 @@ class = require "class"
 -- Classes
 require "Bird"
 require "Pipe"
+require "Pair"
 
 -- Screen resolution
 WINDOW_WIDTH = 1280
@@ -39,10 +40,12 @@ local BACKGROUND_SCROLL_SPEED = 15
 local GROUND_SCROLL_SPEED = 60
 
 -- Pipes table
-local pipes = {}
-
+local pipePairs = {}
+-- Saving the last y position in order to implement a gradient
+local lastPipeYPosition = 0
 -- Pipe spawn timer 
 local spawnTimer = 0
+
 
 -- Setup function initializes all the game variables and modes
 function love.load()
@@ -65,6 +68,8 @@ function love.load()
 
     -- Virtual screen
     push.setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, {upscale = "normal"})
+
+    lastPipeYPosition = -PIPE_HEIGHT + math.random(80) + 20
 
     -- Input table
     love.keyboard.keysPressed = {}
@@ -147,30 +152,39 @@ function updateTimer(dt)
 
     if spawnTimer > 2 then
         -- Calls the spawnPipe method
-        spawnPipe()
+        spawnPipes()
         -- Resets the timer
         spawnTimer = 0
     end
 end 
 
-function spawnPipe()
-    -- Creates an instance of Pipe into the table pipes
-    table.insert(pipes, Pipe())
+function spawnPipes()
+    -- The code bellow is just to spawn a pipe with some rules.
+    -- No pipe higher than 10 pixels bellow the top edge of the screen
+    -- No pipe lower than a gap length of 90 pixels  from the bottom
+    local yPosition = math.max(-PIPE_HEIGHT + 10, math.min(lastPipeYPosition + math.random(-20,20),
+    VIRTUAL_HEIGHT - 90 - PIPE_HEIGHT))
+    lastPipeYPosition = yPosition
+    table.insert(pipePairs, Pair(yPosition))
 end
 
 function updatePipes(dt)
-    for key, pipe in pairs(pipes) do
-        pipe:update(dt)
-        
+    -- Update every pipe in the scene  
+    for key, pair in pairs(pipePairs) do
+        pair:update(dt)
+    end
+
+    -- Remove the flagged pipes
+    for key, pair in pairs(pipePairs) do 
         -- Removes pipes that are not visible on the screen
-        if pipe.x < -pipe.width then
-            table.remove(pipes, key)
+        if pair.remove then
+            table.remove(pipePairs, key)
         end
     end
 end
 
 function drawPipes()
-    for key, pipe in pairs(pipes) do
-        pipe:render()
+    for key, pair in pairs(pipePairs) do
+        pair:render()
     end
 end
