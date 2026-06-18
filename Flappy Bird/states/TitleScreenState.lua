@@ -8,6 +8,7 @@ TitleScreenState = class{__includes = BaseState}
 function TitleScreenState:update(dt)
     -- The trigger to play is enter or space
     if love.keyboard.wasPressed("enter") or love.keyboard.wasPressed("space") then
+        isScrolling = true
         gameStateMachine:change("play")
     end
 end 
