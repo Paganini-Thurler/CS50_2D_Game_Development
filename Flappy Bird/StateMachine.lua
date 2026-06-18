@@ -6,7 +6,7 @@ StateMachine = class{}
 
 -- Constructor 
 -- It receives a state as a parameter
-function:StateMachine:init(state)
+function StateMachine:init(states)
     -- A table that has the states and its anonymous functions
     self.empty = {
         render = function() end,
