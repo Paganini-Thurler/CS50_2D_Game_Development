@@ -38,6 +38,8 @@ local BACKGROUND_LOOPING_POINT = 256
 -- a parallax effect
 local BACKGROUND_SCROLL_SPEED = 15
 local GROUND_SCROLL_SPEED = 60
+-- Scrolling flag
+local isScrolling = true
 
 -- Pipes table
 local pipePairs = {}
@@ -103,19 +105,20 @@ end
 
 -- Update loop
 function love.update(dt)
-    -- Scrolls background by preset speed * dt, looping back to 0 after the looping point
-    backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
-    
-    -- Scrolls the ground by preset speed * dt, lopping back to 0 after the screen width ends
-    groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt ) % VIRTUAL_WIDTH
-
-    -- Update the spawnTimer
-    updateTimer(dt)
-    updatePipes(dt)
-    
-    -- Updates the bird 
-    bird:update(dt)
-
+    -- The flag isScrolling controlls the update loop
+    if isScrolling then
+        -- Updates the background scrolling
+        updateBackground(dt)
+        -- Updates the spawnTimer
+        updateTimer(dt)
+        -- Updates pipe pair position
+        updatePipes(dt)
+        -- Checks collisions on the pipe pair
+        checkCollision()
+        -- Updates the bird object
+        bird:update(dt)
+    end
+   
     -- Resets the input table
     love.keyboard.keysPressed = {}
 end 
@@ -158,6 +161,17 @@ function updateTimer(dt)
     end
 end 
 
+-- Updates the background scrolling based on the falg isScrolling
+function updateBackground(dt)
+    if isScrolling then
+        -- Scrolls background by preset speed * dt, looping back to 0 after the looping point
+        backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
+    
+        -- Scrolls the ground by preset speed * dt, lopping back to 0 after the screen width ends
+        groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt ) % VIRTUAL_WIDTH
+    end
+end
+
 function spawnPipes()
     -- The code bellow is just to spawn a pipe with some rules.
     -- No pipe higher than 10 pixels bellow the top edge of the screen
@@ -169,12 +183,12 @@ function spawnPipes()
 end
 
 function updatePipes(dt)
-    -- Update every pipe in the scene  
+    -- Updates every pipe in the scene  
     for key, pair in pairs(pipePairs) do
         pair:update(dt)
     end
 
-    -- Remove the flagged pipes
+    -- Removes the flagged pipes
     for key, pair in pairs(pipePairs) do 
         -- Removes pipes that are not visible on the screen
         if pair.remove then
@@ -186,5 +200,20 @@ end
 function drawPipes()
     for key, pair in pairs(pipePairs) do
         pair:render()
+    end
+end
+
+function checkCollision()
+    -- Checks for collision
+    -- Nestested loop 
+    -- Loop each pipe pair
+    for i, pair in pairs(pipePairs) do
+        -- For each pair loop its pipes
+        for j, pipe in pairs(pair.pipes) do
+            -- Checks the collision for each pipe up and down
+            if bird:isColliding(pipe) then
+                isScrolling = false
+            end
+        end
     end
 end
