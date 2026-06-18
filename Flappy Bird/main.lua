@@ -5,6 +5,9 @@
 
 ]]
 
+-- self. (dot) is for variables (properties, data, tables).
+-- self: (colon) is for functions 
+
 -- Libraries 
 -- Virtual resolution library
 push = require "push"
@@ -16,6 +19,12 @@ class = require "class"
 require "Bird"
 require "Pipe"
 require "Pair"
+
+-- StateMachines
+require "StateMachine"
+require "states.BaseState"
+require "states.PlayState"
+require "states.TitleScreenState"
 
 -- Screen resolution
 WINDOW_WIDTH = 1280
@@ -41,14 +50,6 @@ local GROUND_SCROLL_SPEED = 60
 -- Scrolling flag
 local isScrolling = true
 
--- Pipes table
-local pipePairs = {}
--- Saving the last y position in order to implement a gradient
-local lastPipeYPosition = 0
--- Pipe spawn timer 
-local spawnTimer = 0
-
-
 -- Setup function initializes all the game variables and modes
 function love.load()
     -- nearest-neighbor mode
@@ -61,6 +62,14 @@ function love.load()
     --Window
     -- Window title
     love.window.setTitle("Flappy bird")
+
+    --Fonts 
+    smallFont = love.graphics.newFont("fonts/font.ttf", 8)
+    mediumFont = love.graphics.newFont("fonts/flappy.ttf", 14)
+    flappyFont = love.graphics.newFont("fonts/flappy.ttf", 28)
+    hugeFont = love.graphics.newFont("fonts/flappy.ttf", 56)
+    love.graphics.setFont(flappyFont)
+
     -- Initialize the window with options
     love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
         vsync = true,
@@ -71,13 +80,16 @@ function love.load()
     -- Virtual screen
     push.setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, {upscale = "normal"})
 
-    lastPipeYPosition = -PIPE_HEIGHT + math.random(80) + 20
+    -- State machine 
+    gameStateMachine = StateMachine{
+        ["title"] = function() return TitleScreenState() end,
+        ["play"] = function() return PlayState() end,
+    }
+
+    gameStateMachine:change("title")
 
     -- Input table
     love.keyboard.keysPressed = {}
-
-    -- Variables
-    bird = Bird()
 end 
 
 function love.resize(w, h)
@@ -109,15 +121,10 @@ function love.update(dt)
     if isScrolling then
         -- Updates the background scrolling
         updateBackground(dt)
-        -- Updates the spawnTimer
-        updateTimer(dt)
-        -- Updates pipe pair position
-        updatePipes(dt)
-        -- Checks collisions on the pipe pair
-        checkCollision()
-        -- Updates the bird object
-        bird:update(dt)
+       
     end
+
+    gameStateMachine:update(dt)
    
     -- Resets the input table
     love.keyboard.keysPressed = {}
@@ -137,29 +144,17 @@ function love.draw()
     -- The third copy to fill the remaining screen width during the scroll
     love.graphics.draw(background, -backgroundScroll + (BACKGROUND_LOOPING_POINT * 2), 0)
 
+    gameStateMachine:render()
+
     -- Draws the ground at the bottom of the screen minus its height of 16px
     love.graphics.draw(ground,-groundScroll,VIRTUAL_HEIGHT - 16)
 
-    drawPipes()
-    bird:render()
- 
 
     --Ends virtual screen
     push.finish()
 end 
 
--- Implements the logic to spawn pipes after a time
-function updateTimer(dt)
-    -- Adds a delta time to the spawn timer 
-    spawnTimer = spawnTimer + dt
 
-    if spawnTimer > 2 then
-        -- Calls the spawnPipe method
-        spawnPipes()
-        -- Resets the timer
-        spawnTimer = 0
-    end
-end 
 
 -- Updates the background scrolling based on the falg isScrolling
 function updateBackground(dt)
@@ -172,48 +167,3 @@ function updateBackground(dt)
     end
 end
 
-function spawnPipes()
-    -- The code bellow is just to spawn a pipe with some rules.
-    -- No pipe higher than 10 pixels bellow the top edge of the screen
-    -- No pipe lower than a gap length of 90 pixels  from the bottom
-    local yPosition = math.max(-PIPE_HEIGHT + 10, math.min(lastPipeYPosition + math.random(-20,20),
-    VIRTUAL_HEIGHT - 90 - PIPE_HEIGHT))
-    lastPipeYPosition = yPosition
-    table.insert(pipePairs, Pair(yPosition))
-end
-
-function updatePipes(dt)
-    -- Updates every pipe in the scene  
-    for key, pair in pairs(pipePairs) do
-        pair:update(dt)
-    end
-
-    -- Removes the flagged pipes
-    for key, pair in pairs(pipePairs) do 
-        -- Removes pipes that are not visible on the screen
-        if pair.remove then
-            table.remove(pipePairs, key)
-        end
-    end
-end
-
-function drawPipes()
-    for key, pair in pairs(pipePairs) do
-        pair:render()
-    end
-end
-
-function checkCollision()
-    -- Checks for collision
-    -- Nestested loop 
-    -- Loop each pipe pair
-    for i, pair in pairs(pipePairs) do
-        -- For each pair loop its pipes
-        for j, pipe in pairs(pair.pipes) do
-            -- Checks the collision for each pipe up and down
-            if bird:isColliding(pipe) then
-                isScrolling = false
-            end
-        end
-    end
-end
