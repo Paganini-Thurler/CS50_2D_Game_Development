@@ -37,6 +37,29 @@ function Bird:init()
     self.currentFrame = 1
 end 
 
+function Bird:isColliding(pipe)
+    if self.x + 2 >= pipe.x + PIPE_WIDTH or pipe.x >= self.x + self.width - 2 then
+        return false
+    end
+
+    -- Gets the real y values because the top pipe on the pair is shifted
+
+    local pipeTopY = pipe.y
+    if pipe.orientation == "top" then
+        -- Unshifts the y coordinates of the inverted pipe
+        pipeTopY = pipe.y - PIPE_HEIGHT
+    end
+
+    -- The values +-4 and +- is a way to shrink the player collision box
+    -- This helps the game balance because it will not trigger collisions 
+    -- when the player barelly collides with an object
+    if self.y + 4 >= pipe.y + PIPE_HEIGHT or pipeTopY >= self.y + self.height - 4 then
+        return false
+    end
+
+    return true
+end
+
 -- Updates the bird y position according to the gravity and input
 function Bird:update(dt)
     -- Applies gravity to velocity based on dt
