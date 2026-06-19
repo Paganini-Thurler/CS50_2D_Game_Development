@@ -58,6 +58,32 @@ Local Multiplayer: At the Start Screen, press the UP or DOWN arrow keys to disab
 2.  **Serving:** The player who was scored upon serves the ball in the next round.
 3.  **Winning:** The first player to reach **5 points** is declared the winner.
 
+# Flappy Bird Remake
+
+A remake of the viral 2013 mobile sensation by Dong Nguyen, developed as part of the Harvard CS50 Introduction to Game Development course. This version utilizes a finite state machine architecture, real-time bounding box collision detection, and procedural, randomized obstacle generation using a retro pixel art aesthetic.
+
+![Flappy Bird remake](/References/Images/flappyBird.png "Flappy Bird")
+
+## Game Modes
+**Single Player:** Guide your bird avatar safely through procedural gaps in pairs of pipe obstacles. The game accelerates in difficulty and runs indefinitely until a collision occurs.
+
+![Flappy Bird remake](/References/Images/flappyBird2.png "Flappy Bird")
+
+## How to play
+
+### **Controls**
+
+| Action | Input Key |
+| :--- | :--- |
+| **Flap / Lift Bird** | `Spacebar` / `Click` |
+| **Confirm / Start Game** | `Enter` / `Space` |
+| **Quit Game** | `Escape` |
+
+### **Game Rules**
+1. **Objective:** Navigate through the gap between incoming upper and lower pipe obstacles without touching them.
+2. **Scoring:** Earn **1 point** for every pipe pair successfully cleared.
+3. **Losing Conditions:** Collision with any pipe surface or touching the bottom boundary floor results in an immediate game over.
+
 
 ## Credits
 
