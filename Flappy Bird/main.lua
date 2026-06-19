@@ -24,6 +24,7 @@ require "Pair"
 require "StateMachine"
 require "states.BaseState"
 require "states.PlayState"
+require "states.ScoreState"
 require "states.TitleScreenState"
 
 -- Screen resolution
@@ -47,8 +48,11 @@ local BACKGROUND_LOOPING_POINT = 256
 -- a parallax effect
 local BACKGROUND_SCROLL_SPEED = 15
 local GROUND_SCROLL_SPEED = 60
+
 -- Scrolling flag
-local isScrolling = true
+isScrolling = true
+
+score = 0
 
 -- Setup function initializes all the game variables and modes
 function love.load()
@@ -84,6 +88,7 @@ function love.load()
     gameStateMachine = StateMachine{
         ["title"] = function() return TitleScreenState() end,
         ["play"] = function() return PlayState() end,
+        ["score"] = function() return ScoreState() end
     }
 
     gameStateMachine:change("title")
@@ -120,8 +125,7 @@ function love.update(dt)
     -- The flag isScrolling controlls the update loop
     if isScrolling then
         -- Updates the background scrolling
-        updateBackground(dt)
-       
+        updateBackground(dt) 
     end
 
     gameStateMachine:update(dt)
@@ -135,8 +139,7 @@ function love.draw()
     --Initializes virtual screen
     push.start()
 
-    --Game graphics
-    
+    --Game graphics 
     -- Background image
     love.graphics.draw(background, -backgroundScroll, 0)
     -- The second copy to fill the first 256px gap
@@ -149,12 +152,9 @@ function love.draw()
     -- Draws the ground at the bottom of the screen minus its height of 16px
     love.graphics.draw(ground,-groundScroll,VIRTUAL_HEIGHT - 16)
 
-
     --Ends virtual screen
     push.finish()
 end 
-
-
 
 -- Updates the background scrolling based on the falg isScrolling
 function updateBackground(dt)

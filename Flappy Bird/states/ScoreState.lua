@@ -9,7 +9,11 @@ ScoreState = class{__includes = BaseState}
 --Constructor
 -- It requires the score from the PlayState class
 function ScoreState:init(parameters)
-    self.score = parameters.score
+    self.score = 0
+end
+
+function ScoreState:enter(parameters)
+    self.score = (parameters and parameters.score) or 0
 end
 
 -- If the player presses enter/space it will trigger the PlayState
@@ -25,7 +29,7 @@ function ScoreState:render()
     love.graphics.printf("Try again! ", 0, 64, VIRTUAL_WIDTH, "center")
 
     love.graphics.setFont(mediumFont)
-    love.graphics.printf("Score: " .. toString(self.score), 0, 100, VIRTUAL_WIDTH, "center")
+    love.graphics.printf("Score: " .. tostring(self.score), 0, 100, VIRTUAL_WIDTH, "center")
 
     love.graphics.printf("Press Enter to try again!", 0, 160, VIRTUAL_WIDTH, "center")
 end

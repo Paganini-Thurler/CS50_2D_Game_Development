@@ -23,6 +23,8 @@ function Pair:init(y)
 
     -- Removoval flag
     self.remove = false
+    -- This flag will be used and update on play state 
+    self.scored = false
 end
 
 -- Updates the Pair

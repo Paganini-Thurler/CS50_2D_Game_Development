@@ -1,5 +1,5 @@
 --[[
-    Play State class
+    Play State class this is the state that plays the game after the title screen state
 ]]
 
 -- Inherits the BaseState
@@ -13,14 +13,17 @@ PIPE_WIDTH = 32
 BIRD_WIDTH = 16
 BIRD_HEIGHT = 16
 
+
 function PlayState:init()
     -- Initalizes all the classes for the game play, this logic was 
     -- previously on the main.lua now its encapsulated on its own state
+    -- Bird object
     self.bird = Bird()
-    -- Pipe pair
+    -- Pipe pair table
     self.pipePairs = {}
     self.spawnTimer = 0
     self.lastPipeYPosition = -PIPE_HEIGHT + math.random(80) + 20
+    self.score = 0 
 
 end
 
@@ -33,12 +36,14 @@ function PlayState:update(dt)
     self:updatePipes(dt)
     -- Checks collisions on the pipe pair
     self:checkCollisions()
+    self:updateScore()
     -- Updates the bird object
     self.bird:update(dt)
 end
 
 function PlayState:render()
     self:drawPipes()
+    self:drawScore()
     self.bird:render()
 end
 
@@ -86,6 +91,11 @@ function PlayState:drawPipes()
     end
 end
 
+function PlayState:drawScore()
+    love.graphics.setFont(flappyFont)
+    love.graphics.print("Score: " .. tostring(self.score), 8,8)
+end
+
 function PlayState:checkCollisions()
     -- Checks for collision with the pipes
     -- Nestested loop 
@@ -95,12 +105,23 @@ function PlayState:checkCollisions()
         for j, pipe in pairs(pair.pipes) do
             -- Checks the collision for each pipe up and down
             if self.bird:isColliding(pipe) then
-                gameStateMachine:change("title")
+                gameStateMachine:change("score", {score = self.score})
             end
         end
     end
     --Checks collision with the ground
     if self.bird.y > VIRTUAL_HEIGHT - 8 then
-        gameStateMachine:change("title")
+        gameStateMachine:change("score", {score = self.score})
+    end
+end
+
+function PlayState:updateScore()
+    for key, pair in pairs(self.pipePairs) do
+        if not pair.scored then
+            if pair.x + PIPE_WIDTH < self.bird.x then
+                self.score = self.score + 1
+                pair.scored = true
+            end
+        end
     end
 end
