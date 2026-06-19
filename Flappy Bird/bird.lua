@@ -32,6 +32,9 @@ function Bird:init()
             i * self.width, 0, self.width, self.height, self.sprite:getDimensions()
         ))
     end
+    
+    self.animationTimer = 0
+    self.animationSpeed = 0.3
 
     -- Which frame to show (1 to 4)
     self.currentFrame = 1
@@ -68,6 +71,14 @@ function Bird:update(dt)
     -- Jumps if the spacebar was pressed
     if love.keyboard.wasPressed("space") then
         self.dy = -300
+        gameSounds["flap"]:play()
+    end
+
+    -- Animation frames 
+    self.animationTimer = self.animationTimer + dt
+
+    if self.animationTimer > self.animationSpeed then
+        self.currentFrame = self.currentFrame % #self.frames + 1
     end
 
     -- Applies the current dy to the y position

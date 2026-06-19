@@ -105,6 +105,7 @@ function PlayState:checkCollisions()
         for j, pipe in pairs(pair.pipes) do
             -- Checks the collision for each pipe up and down
             if self.bird:isColliding(pipe) then
+                gameSounds["hit"]:play()
                 gameStateMachine:change("score", {score = self.score})
             end
         end
@@ -120,6 +121,7 @@ function PlayState:updateScore()
         if not pair.scored then
             if pair.x + PIPE_WIDTH < self.bird.x then
                 self.score = self.score + 1
+                gameSounds["score"]:play()
                 pair.scored = true
             end
         end

@@ -63,6 +63,9 @@ function love.load()
     background = love.graphics.newImage("images/background.png")
     ground = love.graphics.newImage("images/ground.png")
 
+    -- Randon Number Generator seed based on OS time
+    math.randomseed(os.time())
+
     --Window
     -- Window title
     love.window.setTitle("Flappy bird")
@@ -73,6 +76,18 @@ function love.load()
     flappyFont = love.graphics.newFont("fonts/flappy.ttf", 28)
     hugeFont = love.graphics.newFont("fonts/flappy.ttf", 56)
     love.graphics.setFont(flappyFont)
+
+    --Sounds
+    gameSounds = {
+        ["flap"] = love.audio.newSource("sounds/wing.mp3", "static"),
+        ["hit"] = love.audio.newSource("sounds/hit.mp3", "static"),
+        ["score"] = love.audio.newSource("sounds/point.mp3", "static"),
+        ["theme"] = love.audio.newSource("sounds/theme(Instrumental).mp3", "static")
+    }
+
+    -- Start the theme loop
+    gameSounds["theme"]:setLooping(true)
+    gameSounds["theme"]:play()
 
     -- Initialize the window with options
     love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
